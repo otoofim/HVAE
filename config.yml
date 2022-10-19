@@ -1,0 +1,40 @@
+input_img_dim:
+  [256,256]
+no_channels:
+  3
+filter_list:
+  [32,64,128,192]
+no_fcomb_convs:
+  4
+beta:
+  5.0
+pp_cnn_per_block:
+  3
+latent_dim:
+  6
+batch_size:
+  50
+num_samples:
+  16
+momentum:
+  0.00001
+epochs:
+  300
+learning_rate:
+  0.00001
+data_path:
+  "../datasets/augmented_cityscapes"
+run_name:
+  "cityscapes_HVAE1"
+project_name:
+  "HVAE"
+device:
+  "gpu"
+device_name:
+  "cuda:0"
+continue_tra:
+  True
+wandb_id:
+  "3ckzzo9u"
+model_add:
+  "./checkpoints/cityscapes_HVAE1/best.pth"
