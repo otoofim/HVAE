@@ -39,9 +39,9 @@ class ProUNet(nn.Module):
         self.num_classes = num_classes
         
         #architecture
-        self.unet = UNet(self.num_samples, self.num_classes).apply(init_weights)
+        self.unet = UNet(self.num_samples, self.num_classes, self.LatentVarSize).apply(init_weights)
         if training:
-            self.posterior = UNet(self.num_samples, self.num_classes, posterior = True).apply(init_weights)
+            self.posterior = UNet(self.num_samples, self.num_classes, self.LatentVarSize, posterior = True).apply(init_weights)
         
         #loss functions
         self.criterion = nn.BCEWithLogitsLoss(size_average = False, reduction = None, reduce = False)

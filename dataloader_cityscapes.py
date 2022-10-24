@@ -19,7 +19,7 @@ class CityscapesLoader(Dataset):
 
         super().__init__()
 
-        self.dataset = mylist = [f for f in glob.glob(os.path.join(dataset_path, "images", mode, "*"))]
+        self.dataset = [f for f in glob.glob(os.path.join(dataset_path, "images", mode, "*"))]
         self.city_labels = city_labels
         self.pixel_to_color = np.vectorize(self.return_color)
 

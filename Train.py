@@ -31,6 +31,8 @@ def l2_regularisation(m):
 def train(**kwargs):
 
 
+    #kwargs["model_add"] = "./checkpoints/{}_{}/best.pth".format(kwargs["project_name"], kwargs["run_name"])
+    
     hyperparameter_defaults = {
         "run": kwargs["run_name"],
         "hyper_params": kwargs,
@@ -72,9 +74,6 @@ def train(**kwargs):
     val_loader = DataLoader(dataset = val_loader, batch_size = kwargs["batch_size"], shuffle = True, drop_last = True)
 
 
-
-#     kwargs["posterior_input_channels"] = tr_loader[0]['label'].shape[0] + tr_loader[0]['image'].shape[0]
-#     kwargs["prior_input_channels"] = tr_loader[0]['image'].shape[0]
 
 
     if kwargs['device'] == "cpu":
