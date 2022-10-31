@@ -42,11 +42,13 @@ def train(**kwargs):
 
 
     if kwargs['continue_tra']:
-        wandb.init(config = hyperparameter_defaults, project = kwargs["project_name"], entity = 'moh1371',
+        
+        wandb.init(config = hyperparameter_defaults, project = kwargs["project_name"], entity = kwargs["entity"],
                     name = hyperparameter_defaults['run'], resume = "must", id = kwargs["wandb_id"])
+        
         print("wandb resumed...")
     else:
-        wandb.init(config = hyperparameter_defaults, project = kwargs["project_name"], entity = 'moh1371',
+        wandb.init(config = hyperparameter_defaults, project = kwargs["project_name"], entity = kwargs["entity"],
                     name = hyperparameter_defaults['run'], resume = "allow")
 
 
@@ -108,14 +110,15 @@ def train(**kwargs):
     wandb.watch(model)
 
     start_epoch = 0
+    resume_position = 0
     end_epoch = kwargs["epochs"]
+    total = kwargs["epochs"]
 
     if kwargs["continue_tra"]:
         start_epoch = torch.load(kwargs["model_add"])['epoch'] + 1
-        end_epoch = torch.load(kwargs["model_add"])['epoch'] + 1 + int(wandb.config.hyper_params["epochs"])
+        resume_position = start_epoch
 
-
-    with tqdm(range(start_epoch, end_epoch), unit="epoch", leave = True, position = 0) as epobar:
+    with tqdm(range(start_epoch, end_epoch), initial = resume_position, total = total, unit="epoch", leave = True, position = 0) as epobar:
         for epoch in epobar:
                 
                 epobar.set_description("Epoch {}".format(epoch + 1))

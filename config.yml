@@ -28,6 +28,8 @@ run_name:
   "cityscapes_HVAE1"
 project_name:
   "HVAE"
+entity:
+  "loughborough_project"
 device:
   "gpu"
 device_name:
