@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(1, './architecture')
+sys.path.insert(2, '../dataLoaders')
 import torchvision.models as models
 from torchvision import transforms
 from dataloader_cityscapes import *
