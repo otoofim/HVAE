@@ -27,11 +27,13 @@ class MapillaryLoader(Dataset):
         self.ver = ver
         self.imgSize = imgSize
         datasetRootPath = Path(datasetRootPath)
-        tmpDataset = [f for f in glob.glob(str(Path.joinpath(datasetRootPath, mode, "images", "*.jpg")))][:100]
-        self.dataset = np.array([])
+        tmpDataset = [f for f in glob.glob(str(Path.joinpath(datasetRootPath, mode, "images", "*.jpg")))]
+        listDataset = []
         for add in tmpDataset:
-            self.dataset = np.append(self.dataset, [add+"***"+str(j) for j in range(11)])
+            listDataset += [add+"***"+str(j) for j in range(11)]
               
+        self.dataset = np.array(listDataset)        
+                
         self.newLabels = new_labels
         self.classIds = classIds
         self.labels = {}
@@ -39,9 +41,8 @@ class MapillaryLoader(Dataset):
             config = json.load(jsonfile)
             for label in config['labels']:
                 self.labels[label['name']] = label['color']
-
-        self.transform_in = transform_in
-        self.transform_ou = transform_ou
+        
+        self.pixel_to_color = np.vectorize(self.return_color)
 
     def __len__(self):
         return len(self.dataset)
@@ -123,5 +124,13 @@ class MapillaryLoader(Dataset):
 
         return np.array(img), np.array(seg_color)
                
-        
+    def return_color(self, idx):
+        return tuple(classIds[list(classIds.keys())[int(idx)]])
+
+
+    def prMask_to_color(self, img):
+
+        argmax = torch.argmax(img, dim = 1)
+        resu = self.pixel_to_color(argmax)
+        return torch.tensor(np.transpose(np.stack((resu[0],resu[1], resu[2])), (1,0,2,3))).float()
     
