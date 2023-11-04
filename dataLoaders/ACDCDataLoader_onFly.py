@@ -16,111 +16,111 @@ def prepareAugFuncs(imgSize):
             ),    
 
 
-#         "crop":T.Compose([
-#                 T.ToTensor(),
-#                 T.CenterCrop(size = 500),
-#                 T.Resize(imgSize),
-#                 T.ToPILImage(),
-#             ],
-#             ),        
+        "crop":T.Compose([
+                T.ToTensor(),
+                T.CenterCrop(size = 500),
+                T.Resize(imgSize),
+                T.ToPILImage(),
+            ],
+            ),        
 
 
-#         "grayScale":T.Compose([
-#             T.ToTensor(),
-#             T.Grayscale(num_output_channels=3),
-#             T.Resize(imgSize),
-#             T.ToPILImage(),
-#             ],
-#             ),
+        "grayScale":T.Compose([
+            T.ToTensor(),
+            T.Grayscale(num_output_channels=3),
+            T.Resize(imgSize),
+            T.ToPILImage(),
+            ],
+            ),
 
 
-#         "colorJitter":T.Compose([
-#             T.ToTensor(),
-#             T.ColorJitter(brightness = (0.5,1), contrast = (0.5,1), saturation = (0.5,1), hue = 0.5),
-#             T.Resize(imgSize),
-#             T.ToPILImage(),
-#             ],
-#             ),
-
-
-
-#         "gaussianBlur":T.Compose([
-#             T.ToTensor(),
-#             T.GaussianBlur(kernel_size = (51, 51), sigma = (5, 5)),
-#             T.Resize(imgSize),
-#             T.ToPILImage(),
-#             ],
-#             ),
+        "colorJitter":T.Compose([
+            T.ToTensor(),
+            T.ColorJitter(brightness = (0.5,1), contrast = (0.5,1), saturation = (0.5,1), hue = 0.5),
+            T.Resize(imgSize),
+            T.ToPILImage(),
+            ],
+            ),
 
 
 
-#         "rotation":T.Compose([
-#             T.ToTensor(),
-#             T.RandomRotation(degrees = (-30, 30)),
-#             T.Resize(imgSize),
-#             T.ToPILImage(),
-#             ],
-#             ),
-
-
-#         "elastic":T.Compose([
-#             T.ToTensor(),
-#             T.ElasticTransform(alpha = 500.),
-#             T.Resize(imgSize),
-#             T.ToPILImage(),
-#             ],
-#             ),
+        "gaussianBlur":T.Compose([
+            T.ToTensor(),
+            T.GaussianBlur(kernel_size = (51, 51), sigma = (5, 5)),
+            T.Resize(imgSize),
+            T.ToPILImage(),
+            ],
+            ),
 
 
 
-
-#         "invert":T.Compose([
-#             T.ToTensor(),
-#             T.RandomInvert(p = 1.),
-#             T.Resize(imgSize),
-#             T.ToPILImage(),
-#             ],
-#             ),
-
+        "rotation":T.Compose([
+            T.ToTensor(),
+            T.RandomRotation(degrees = (-30, 30)),
+            T.Resize(imgSize),
+            T.ToPILImage(),
+            ],
+            ),
 
 
-#         "solarize":T.Compose([
-#             T.ToTensor(),
-#             T.RandomSolarize(threshold = 0.05, p = 1.),
-#             T.Resize(imgSize),
-#             T.ToPILImage(),
-#             ],
-#             ),
+        "elastic":T.Compose([
+            T.ToTensor(),
+            T.ElasticTransform(alpha = 500.),
+            T.Resize(imgSize),
+            T.ToPILImage(),
+            ],
+            ),
 
 
 
-#         "augMix":T.Compose([
 
-#             T.AugMix(severity = 10, mixture_width = 10),
-#             T.ToTensor(),
-#             T.Resize(imgSize),
-#             T.ToPILImage(),
-#             ],
-#             ),
-
-
-#         "posterize":T.Compose([
-
-#             T.RandomPosterize(bits = 2, p = 1.),
-#             T.ToTensor(),
-#             T.Resize(imgSize),
-#             T.ToPILImage(),
-#             ],
-#             ),
+        "invert":T.Compose([
+            T.ToTensor(),
+            T.RandomInvert(p = 1.),
+            T.Resize(imgSize),
+            T.ToPILImage(),
+            ],
+            ),
 
 
-#         "erasing":T.Compose([
-#             T.ToTensor(),
-#             T.RandomErasing(p=1., scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0),
-#             T.Resize(imgSize),
-#             T.ToPILImage(),
-#             ],
-#             ),
+
+        "solarize":T.Compose([
+            T.ToTensor(),
+            T.RandomSolarize(threshold = 0.05, p = 1.),
+            T.Resize(imgSize),
+            T.ToPILImage(),
+            ],
+            ),
+
+
+
+        "augMix":T.Compose([
+
+            T.AugMix(severity = 10, mixture_width = 10),
+            T.ToTensor(),
+            T.Resize(imgSize),
+            T.ToPILImage(),
+            ],
+            ),
+
+
+        "posterize":T.Compose([
+
+            T.RandomPosterize(bits = 2, p = 1.),
+            T.ToTensor(),
+            T.Resize(imgSize),
+            T.ToPILImage(),
+            ],
+            ),
+
+
+        "erasing":T.Compose([
+            T.ToTensor(),
+            T.RandomErasing(p=1., scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0),
+            T.Resize(imgSize),
+            T.ToPILImage(),
+            ],
+            ),
     }
 
 
@@ -141,6 +141,8 @@ class ACDC_onFly(Dataset):
         self.imgNamesList = glob.glob(join(self.datasetRootPath, "*", kwargs["mode"], "*", "*"))
         
         self.augmenters = prepareAugFuncs(self.imgSize)
+        
+        self.classes = {label.name:list(label.color) for label in city_labels}
         
         
         self.transform_in = preprocess_in = transforms.Compose([
@@ -238,26 +240,16 @@ class ACDC_onFly(Dataset):
         return org_img, ref_img, seg_mask, seg_color
         
         
-        
     def prMask_to_color(self, segs):
         
-        vec_func = np.vectorize(self.myColour2rgb, otypes=[object])
-
-#         outMap = (np.stack(vec_func([sample for sample in segs]), axis = 0)*256).astype(np.uint8)
-        outMap = np.stack(vec_func([sample for sample in segs]), axis = 0)
-
-        img = torch.from_numpy(outMap)/256.
-        return img.permute(0,3,1,2)
-    
-    
-    
-    def myColour2rgb(self, sample):
+        colorMap = {label.id:torch.tensor(list(label.color)) for label in city_labels}        
+        preds = torch.argmax(segs, dim=1).unsqueeze(-1)
+        
+                
+        for classid in colorMap.keys():
+            preds = torch.where(preds == classid, colorMap[classid], preds)
+        
+        return preds.permute(0,3,1,2).float()
         
         
-        cityscapesColour = {label.id:label.color for label in city_labels}
-        colours = list(collections.OrderedDict(sorted(cityscapesColour.items())).values())
-        colours = np.array(colours[2:])
-
-        seg = torch.argmax(sample, dim = 0).numpy()
-        colourMap = color.label2rgb(seg, colors = colours, bg_label=0, image_alpha = 1., alpha = 1.)
-        return colourMap
+        
