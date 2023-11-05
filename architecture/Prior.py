@@ -8,6 +8,8 @@ import torchvision.transforms as T
 import torch.nn.functional as F
 from torch.distributions import Normal, Independent, kl, MultivariateNormal
 from UNetBlocks import *
+from crfseg import CRF
+
 
 
 class TempSoftmax(nn.Module):
@@ -51,6 +53,8 @@ class prior(nn.Module):
         
         self.regressionLayer = UpConvBlock(input_dim = (128 * 2) + LatentVarSize, output_dim = 1, ResLayers = 2, padding = 1)
         self.softmax = nn.Softmax(dim=1)
+        self.crf = CRF(n_spatial_dims=2)
+        
 
         
     def forward(self, inputFeatures, postDist):
@@ -59,8 +63,8 @@ class prior(nn.Module):
         encoderOuts = {}
         
         encoderOuts["out1"] = self.DownConvBlock1(inputFeatures)
-        encoderOuts["out2"] = F.dropout(self.DownConvBlock2(encoderOuts["out1"]), p = 0.5, training = True, inplace = False)
-        encoderOuts["out3"] = F.dropout(self.DownConvBlock3(encoderOuts["out2"]), p = 0.3, training = True, inplace = False)
+        encoderOuts["out2"] = F.dropout2d(self.DownConvBlock2(encoderOuts["out1"]), p = 0.5, training = True, inplace = False)
+        encoderOuts["out3"] = F.dropout2d(self.DownConvBlock3(encoderOuts["out2"]), p = 0.3, training = True, inplace = False)
         encoderOuts["out4"], dists["dist1"] = self.DownConvBlock4(encoderOuts["out3"])
         
 
@@ -68,18 +72,18 @@ class prior(nn.Module):
         latent1 = torch.nn.Upsample(size=encoderOuts["out3"].shape[2:], mode='nearest')(postDist["dist1"].rsample())
         out = torch.cat((encoderOuts["out3"], out, latent1), 1)
 
-        out = F.dropout(out, p = 0.5, training = True, inplace = False)
+        out = F.dropout2d(out, p = 0.5, training = True, inplace = False)
         out, dists["dist2"] = self.UpConvBlock2(out)
         latent2 = torch.nn.Upsample(size=encoderOuts["out2"].shape[2:], mode='nearest')(postDist["dist2"].rsample())
         out = torch.cat((encoderOuts["out2"], out, latent2), 1)
 
-        out = F.dropout(out, p = 0.5, training = True, inplace = False)
+        out = F.dropout2d(out, p = 0.5, training = True, inplace = False)
         out, dists["dist3"] = self.UpConvBlock3(out)
         latent3 =  torch.nn.Upsample(size=encoderOuts["out1"].shape[2:], mode='nearest')(postDist["dist3"].rsample())
         out = torch.cat((encoderOuts["out1"], out, latent3), 1)
             
         
-        segs = self.softmax(self.UpConvBlock4(out))
+        segs = self.crf(self.softmax(self.UpConvBlock4(out)))
         fric = self.regressionLayer(out)
         
         return segs, dists, fric

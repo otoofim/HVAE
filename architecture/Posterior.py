@@ -43,8 +43,8 @@ class posterior(nn.Module):
         encoderOuts = {}
         
         encoderOuts["out1"] = self.DownConvBlock1(inputFeatures)
-        encoderOuts["out2"] = F.dropout(self.DownConvBlock2(encoderOuts["out1"]), p = 0.5, training = True, inplace = False)
-        encoderOuts["out3"] = F.dropout(self.DownConvBlock3(encoderOuts["out2"]), p = 0.3, training = True, inplace = False)
+        encoderOuts["out2"] = F.dropout2d(self.DownConvBlock2(encoderOuts["out1"]), p = 0.5, training = True, inplace = False)
+        encoderOuts["out3"] = F.dropout2d(self.DownConvBlock3(encoderOuts["out2"]), p = 0.3, training = True, inplace = False)
         encoderOuts["out4"], dists["dist1"] = self.DownConvBlock4(encoderOuts["out3"])
         
      
@@ -53,12 +53,12 @@ class posterior(nn.Module):
         latent1 = torch.nn.Upsample(size=encoderOuts["out3"].shape[2:], mode='nearest')(dists["dist1"].rsample())
         out = torch.cat((encoderOuts["out3"], out, latent1), 1)
 
-        out = F.dropout(out, p = 0.5, training = True, inplace = False)
+        out = F.dropout2d(out, p = 0.5, training = True, inplace = False)
         out, dists["dist2"] = self.UpConvBlock2(out)
         latent2 = torch.nn.Upsample(size=encoderOuts["out2"].shape[2:], mode='nearest')(dists["dist2"].rsample())
         out = torch.cat((encoderOuts["out2"], out, latent2), 1)
         
-        out = F.dropout(out, p = 0.5, training = True, inplace = False)
+        out = F.dropout2d(out, p = 0.5, training = True, inplace = False)
         _, dists["dist3"] = self.UpConvBlock3(out)
 
 
