@@ -18,7 +18,7 @@ class DownConvBlock(nn.Module):
         Reslayers = []
         self.latent_dim = latent_dim
         
-        self.firstLayer = nn.Conv2d(input_dim, output_dim, kernel_size = 3, stride = 2, padding = int(padding))
+        self.firstLayer = nn.Conv2d(input_dim, output_dim, kernel_size = 3, stride = 2, padding = int(padding), dilation = 1)
         self.relu = nn.ReLU()
         for _ in range(ResLayers):
             Reslayers.append(ResidualBlock(output_dim))
@@ -26,7 +26,7 @@ class DownConvBlock(nn.Module):
         self.layers = nn.Sequential(*Reslayers)
         
         if self.latent_dim:
-            self.distLayer = nn.Conv2d(output_dim, 2 * self.latent_dim, (1,1), stride=1)
+            self.distLayer = nn.Conv2d(output_dim, 2 * self.latent_dim, (1,1), stride=1, dilation = 1)
     
     def forward(self, inputFeatures):
         

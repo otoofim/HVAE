@@ -83,7 +83,8 @@ class prior(nn.Module):
         out = torch.cat((encoderOuts["out1"], out, latent3), 1)
             
         
-        segs = self.crf(self.softmax(self.UpConvBlock4(out)))
+        segs = self.softmax(self.UpConvBlock4(out))
+        segs = self.crf(segs)
         fric = self.regressionLayer(out)
         
         return segs, dists, fric
@@ -132,6 +133,49 @@ class prior(nn.Module):
         
         
         return torch.stack(samples), dists, torch.stack(samplesFri)
+
+
+
+    def latentVisualize(self, inputFeatures, sampleLatent1 = None, sampleLatent2 = None, sampleLatent3 = None):
+        
+        dists = {}
+        encoderOuts = {}
+        
+        encoderOuts["out1"] = self.DownConvBlock1(inputFeatures)
+        encoderOuts["out2"] = F.dropout2d(self.DownConvBlock2(encoderOuts["out1"]), p = 0.5, training = True, inplace = False)
+        encoderOuts["out3"] = F.dropout2d(self.DownConvBlock3(encoderOuts["out2"]), p = 0.3, training = True, inplace = False)
+        encoderOuts["out4"], dists["dist1"] = self.DownConvBlock4(encoderOuts["out3"])
+        
+
+        out = self.UpConvBlock1(encoderOuts["out4"])
+        if sampleLatent1 is None:
+            latent1 = torch.nn.Upsample(size=encoderOuts["out3"].shape[2:], mode='nearest')(postDist["dist1"].rsample())
+        else:
+            latent1 = sampleLatent1
+        out = torch.cat((encoderOuts["out3"], out, latent1), 1)
+
+        out = F.dropout2d(out, p = 0.5, training = True, inplace = False)
+        out, dists["dist2"] = self.UpConvBlock2(out)
+        if sampleLatent2 is None:
+            latent2 = torch.nn.Upsample(size=encoderOuts["out2"].shape[2:], mode='nearest')(postDist["dist2"].rsample())
+        else:
+            latent2 = sampleLatent2
+        out = torch.cat((encoderOuts["out2"], out, latent2), 1)
+
+        out = F.dropout2d(out, p = 0.5, training = True, inplace = False)
+        out, dists["dist3"] = self.UpConvBlock3(out)
+        if sampleLatent3 is None:
+            latent3 =  torch.nn.Upsample(size=encoderOuts["out1"].shape[2:], mode='nearest')(postDist["dist3"].rsample())
+        else:
+            latent3 = sampleLatent3
+        out = torch.cat((encoderOuts["out1"], out, latent3), 1)
+            
+        
+        segs = self.softmax(self.UpConvBlock4(out))
+        segs = self.cef(segs)
+        fric = self.regressionLayer(out)
+        
+        return segs, fric
     
         
 
